@@ -2,13 +2,13 @@ package routes
 
 import (
 	"github.com/MoChikayo/PBBK-FP/pkg/controllers"
-	"github.com/gin-gonic/gin"
+	"github.com/gorilla/mux"
 )
 
-func RegisterBookStoreRoutes(router *gin.Engine) {
-	router.POST("/book/", controllers.CreateBook)
-	router.GET("/book/", controllers.GetBook)
-	router.GET("/book/:bookId", controllers.GetBookById)
-	router.PUT("/book/:bookId", controllers.UpdateBook)
-	router.DELETE("/book/:bookId", controllers.DeleteBook)
+var RegisterBookStoreRoutes = func(router *mux.Router) {
+	router.HandleFunc("/book/", controllers.CreateBook).Methods("POST")
+	router.HandleFunc("/book/", controllers.GetBook).Methods("GET")
+	router.HandleFunc("/book/{bookId}", controllers.GetBookById).Methods("GET")
+	router.HandleFunc("/book/{bookId}", controllers.UpdateBook).Methods("PUT")
+	router.HandleFunc("/book/{bookId}", controllers.DeleteBook).Methods("DELETE")
 }
