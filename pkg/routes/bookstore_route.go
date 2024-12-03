@@ -1,7 +1,7 @@
 package routes
 
 import (
-	"github.com/MoChikayo/PBBK-FP/pkg/controllers"
+	"github.com/MoChikayo/PBKK-FP/pkg/controllers"
 	"github.com/gorilla/mux"
 )
 

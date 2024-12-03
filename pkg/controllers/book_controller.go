@@ -6,17 +6,34 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/MoChikayo/PBBK-FP/pkg/models"
-	"github.com/MoChikayo/PBBK-FP/pkg/utils"
+	"github.com/MoChikayo/PBKK-FP/pkg/models"
+	"github.com/MoChikayo/PBKK-FP/pkg/utils"
 	"github.com/gorilla/mux"
+	//"gorm.io/gorm"
 )
 
 var NewBook models.Book
 
+// func GetBook(w http.ResponseWriter, r *http.Request) {
+// 	newBooks, err := models.GetAllBooks()
+// 	if err != nil {
+// 		http.Error(w, err.Error(), http.StatusInternalServerError)
+// 		return
+// 	}
+// 	res, _ := json.Marshal(newBooks)
+// 	w.Header().Set("Content-Type", "pkglication/json")
+// 	w.WriteHeader(http.StatusOK)
+// 	w.Write(res)
+// }
+
 func GetBook(w http.ResponseWriter, r *http.Request) {
-	newBooks := models.GetAllBooks()
-	res, _ := json.Marshal(newBooks)
-	w.Header().Set("Content-Type", "pkglication/json")
+	newBooks := models.GetAllBooks() // No error return value here
+	res, err := json.Marshal(newBooks)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	w.Write(res)
 }
@@ -28,7 +45,11 @@ func GetBookById(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		fmt.Println("Error while parsing")
 	}
-	bookDetails, err := models.GetBookById(ID)
+	bookDetails, db := models.GetBookById(ID)
+	if db.Error != nil { // Check for errors from the *gorm.DB
+		http.Error(w, db.Error.Error(), http.StatusInternalServerError)
+		return
+	}
 	res, _ := json.Marshal(bookDetails)
 	w.Header().Set("Content-Type", "pkglication/json")
 	w.WriteHeader(http.StatusOK)
@@ -69,6 +90,10 @@ func UpdateBook(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("Error while parsing")
 	}
 	bookDetails, db := models.GetBookById(ID)
+	if db.Error != nil { // Check for errors from the *gorm.DB
+		http.Error(w, db.Error.Error(), http.StatusInternalServerError)
+		return
+	}
 	if updateBook.Name != "" {
 		bookDetails.Name = updateBook.Name
 	}
@@ -78,7 +103,11 @@ func UpdateBook(w http.ResponseWriter, r *http.Request) {
 	if updateBook.Publication != "" {
 		bookDetails.Publication = updateBook.Publication
 	}
-	db.Save(&bookDetails)
+	if err := db.Save(&bookDetails).Error; err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	//db.Save(&bookDetails)
 	res, _ := json.Marshal(bookDetails)
 	w.Header().Set("Content_Type", "pkglication/json")
 	w.WriteHeader(http.StatusOK)
