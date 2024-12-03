@@ -1,7 +1,7 @@
 package models
 
 import (
-	"PBBK-FP/pkg/config"
+	"github.com/MoChikayo/PBKK-FP/pkg/config"
 
 	"gorm.io/gorm"
 )
