@@ -9,6 +9,7 @@ import (
 	"github.com/MoChikayo/PBKK-FP/pkg/config"
 	"github.com/MoChikayo/PBKK-FP/pkg/models"
 	"github.com/MoChikayo/PBKK-FP/pkg/utils"
+	"github.com/gin-gonic/gin"
 	"github.com/gorilla/mux"
 	//"gorm.io/gorm"
 )
@@ -67,33 +68,13 @@ func CreateBook(w http.ResponseWriter, r *http.Request) {
 	w.Write(res)
 }
 
-<<<<<<< Updated upstream
-func DeleteBook(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	bookId := vars["bookId"]
-=======
 // DeleteBook handles the deletion of a book by its ID
 func DeleteBook(c *gin.Context) {
 	bookId := c.Param("bookId")
->>>>>>> Stashed changes
 	ID, err := strconv.ParseInt(bookId, 0, 0)
 	if err != nil {
 		fmt.Println("Error while parsing")
 	}
-<<<<<<< Updated upstream
-	book := models.DeleteBook(ID)
-	res, _ := json.Marshal(book)
-	w.Header().Set("Content-Type", "pkglication/json")
-	w.WriteHeader(http.StatusOK)
-	w.Write(res)
-}
-
-func UpdateBook(w http.ResponseWriter, r *http.Request) {
-	var updateBook = &models.Book{}
-	utils.ParseBody(r, updateBook)
-	vars := mux.Vars(r)
-	bookId := vars["bookId"]
-=======
 
 	// Fetch the book details to ensure it exists before deleting
 	var bookDetails models.Book
@@ -126,23 +107,16 @@ func UpdateBook(c *gin.Context) {
 	}
 
 	bookId := c.Param("bookId")
->>>>>>> Stashed changes
 	ID, err := strconv.ParseInt(bookId, 0, 0)
 	if err != nil {
 		fmt.Println("Error while parsing")
 	}
-<<<<<<< Updated upstream
-	bookDetails, db := models.GetBookById(ID)
-	if db.Error != nil { // Check for errors from the *gorm.DB
-		http.Error(w, db.Error.Error(), http.StatusInternalServerError)
-=======
 
 	// Fetch the book details explicitly using the "books" table
 	var bookDetails models.Book
 	db := config.GetDB().Table("books").Where("id = ?", ID).First(&bookDetails)
 	if db.Error != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": db.Error.Error()})
->>>>>>> Stashed changes
 		return
 	}
 	if updateBook.Name != "" {
@@ -154,18 +128,6 @@ func UpdateBook(c *gin.Context) {
 	if updateBook.Publication != "" {
 		bookDetails.Publication = updateBook.Publication
 	}
-<<<<<<< Updated upstream
-	if err := db.Save(&bookDetails).Error; err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	//db.Save(&bookDetails)
-	res, _ := json.Marshal(bookDetails)
-	w.Header().Set("Content_Type", "pkglication/json")
-	w.WriteHeader(http.StatusOK)
-	w.Write(res)
-}
-=======
 
 	// Save changes
 	if err := config.GetDB().Table("books").Where("id = ?", ID).Save(&bookDetails).Error; err != nil {
@@ -225,4 +187,3 @@ func UpdateBook(c *gin.Context) {
 
 // 	c.JSON(http.StatusOK, bookDetails)
 // }
->>>>>>> Stashed changes

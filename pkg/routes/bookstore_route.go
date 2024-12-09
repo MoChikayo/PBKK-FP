@@ -3,22 +3,20 @@ package routes
 import (
 	"github.com/MoChikayo/PBKK-FP/pkg/config"
 	"github.com/MoChikayo/PBKK-FP/pkg/controllers"
-	"github.com/gorilla/mux"
+	"github.com/gin-gonic/gin"
 )
 
-<<<<<<< Updated upstream
-var RegisterBookStoreRoutes = func(router *mux.Router) {
-	router.HandleFunc("/book/", controllers.CreateBook).Methods("POST")
-	router.HandleFunc("/book/", controllers.GetBook).Methods("GET")
-	router.HandleFunc("/book/{bookId}", controllers.GetBookById).Methods("GET")
-	router.HandleFunc("/book/{bookId}", controllers.UpdateBook).Methods("PUT")
-	router.HandleFunc("/book/{bookId}", controllers.DeleteBook).Methods("DELETE")
-=======
 var RegisterBookStoreRoutes = func(router *gin.Engine) {
 	// Book routes
-	router.POST("/book", controllers.CreateBook)
-	router.GET("/book", controllers.GetBook)
-	router.GET("/book/:bookId", controllers.GetBookById)
+	router.POST("/book", func(c *gin.Context) {
+		controllers.CreateBook(c.Writer, c.Request)
+	})
+	router.GET("/book", func(c *gin.Context) {
+		controllers.GetBook(c.Writer, c.Request)
+	})
+	router.GET("/book/:bookId", func(c *gin.Context) {
+		controllers.GetBookById(c.Writer, c.Request)
+	})
 	router.PUT("/book/:bookId", controllers.UpdateBook)
 	router.DELETE("/book/:bookId", controllers.DeleteBook)
 
@@ -49,5 +47,4 @@ var RegisterBookStoreRoutes = func(router *gin.Engine) {
 		}
 		c.JSON(200, gin.H{"status": "database reset successful"})
 	})
->>>>>>> Stashed changes
 }
