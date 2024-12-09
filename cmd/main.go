@@ -2,17 +2,18 @@ package main
 
 import (
 	"log"
-	"net/http"
 
 	"github.com/MoChikayo/PBKK-FP/pkg/routes"
-
-	"github.com/gorilla/mux"
-	_ "github.com/jinzhu/gorm/dialects/mysql"
+	"github.com/gin-gonic/gin"
 )
 
 func main() {
-	r := mux.NewRouter()
+	r := gin.Default()
+
+	// Register routes
 	routes.RegisterBookStoreRoutes(r)
+
+	// Start the server
 	log.Println("Server is running on http://localhost:9010")
-	log.Fatal(http.ListenAndServe("localhost:9010", r))
+	log.Fatal(r.Run(":9010"))
 }
