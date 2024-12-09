@@ -6,7 +6,7 @@ import (
 	"gorm.io/gorm"
 )
 
-var db *gorm.DB
+//var db *gorm.DB
 
 type Book struct {
 	gorm.Model
@@ -15,10 +15,19 @@ type Book struct {
 	Publication string `json:"publication"`
 }
 
+<<<<<<< Updated upstream
 func init() {
 	config.Connect()
 	db = config.GetDB()
 	db.AutoMigrate(&Book{})
+=======
+var db *gorm.DB
+
+func init() {
+	config.Connect()
+	db = config.GetDB()
+	db.AutoMigrate(&Book{}, &Customer{}, &Transaction{})
+>>>>>>> Stashed changes
 }
 
 // func (b *Book) CreateBook() *Book {

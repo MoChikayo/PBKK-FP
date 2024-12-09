@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/MoChikayo/PBKK-FP/pkg/config"
 	"github.com/MoChikayo/PBKK-FP/pkg/models"
 	"github.com/MoChikayo/PBKK-FP/pkg/utils"
 	"github.com/gorilla/mux"
@@ -66,13 +67,20 @@ func CreateBook(w http.ResponseWriter, r *http.Request) {
 	w.Write(res)
 }
 
+<<<<<<< Updated upstream
 func DeleteBook(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	bookId := vars["bookId"]
+=======
+// DeleteBook handles the deletion of a book by its ID
+func DeleteBook(c *gin.Context) {
+	bookId := c.Param("bookId")
+>>>>>>> Stashed changes
 	ID, err := strconv.ParseInt(bookId, 0, 0)
 	if err != nil {
 		fmt.Println("Error while parsing")
 	}
+<<<<<<< Updated upstream
 	book := models.DeleteBook(ID)
 	res, _ := json.Marshal(book)
 	w.Header().Set("Content-Type", "pkglication/json")
@@ -85,13 +93,56 @@ func UpdateBook(w http.ResponseWriter, r *http.Request) {
 	utils.ParseBody(r, updateBook)
 	vars := mux.Vars(r)
 	bookId := vars["bookId"]
+=======
+
+	// Fetch the book details to ensure it exists before deleting
+	var bookDetails models.Book
+	db := config.GetDB().Where("id = ?", ID).First(&bookDetails)
+	if db.Error != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": db.Error.Error()})
+		return
+	}
+
+	if bookDetails.ID == 0 {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Book not found"})
+		return
+	}
+
+	// Soft delete the book
+	if err := config.GetDB().Delete(&bookDetails).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete book"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Book deleted successfully"})
+}
+
+// UpdateBook handles the updating of a book's details by its ID
+func UpdateBook(c *gin.Context) {
+	var updateBook models.Book
+	if err := c.ShouldBindJSON(&updateBook); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	bookId := c.Param("bookId")
+>>>>>>> Stashed changes
 	ID, err := strconv.ParseInt(bookId, 0, 0)
 	if err != nil {
 		fmt.Println("Error while parsing")
 	}
+<<<<<<< Updated upstream
 	bookDetails, db := models.GetBookById(ID)
 	if db.Error != nil { // Check for errors from the *gorm.DB
 		http.Error(w, db.Error.Error(), http.StatusInternalServerError)
+=======
+
+	// Fetch the book details explicitly using the "books" table
+	var bookDetails models.Book
+	db := config.GetDB().Table("books").Where("id = ?", ID).First(&bookDetails)
+	if db.Error != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": db.Error.Error()})
+>>>>>>> Stashed changes
 		return
 	}
 	if updateBook.Name != "" {
@@ -103,6 +154,7 @@ func UpdateBook(w http.ResponseWriter, r *http.Request) {
 	if updateBook.Publication != "" {
 		bookDetails.Publication = updateBook.Publication
 	}
+<<<<<<< Updated upstream
 	if err := db.Save(&bookDetails).Error; err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -113,3 +165,64 @@ func UpdateBook(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	w.Write(res)
 }
+=======
+
+	// Save changes
+	if err := config.GetDB().Table("books").Where("id = ?", ID).Save(&bookDetails).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, bookDetails)
+}
+
+// func DeleteBook(c *gin.Context) {
+// 	bookId := c.Param("bookId")
+// 	ID, err := strconv.ParseInt(bookId, 0, 0)
+// 	if err != nil {
+// 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid book ID"})
+// 		return
+// 	}
+// 	book := models.DeleteBook(ID)
+// 	c.JSON(http.StatusOK, book)
+// }
+
+// func UpdateBook(c *gin.Context) {
+// 	var updateBook models.Book
+// 	if err := c.ShouldBindJSON(&updateBook); err != nil {
+// 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+// 		return
+// 	}
+
+// 	bookId := c.Param("bookId")
+// 	ID, err := strconv.ParseInt(bookId, 0, 0)
+// 	if err != nil {
+// 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid book ID"})
+// 		return
+// 	}
+
+// 	bookDetails, db := models.GetBookById(ID)
+// 	if db.Error != nil {
+// 		c.JSON(http.StatusInternalServerError, gin.H{"error": db.Error.Error()})
+// 		return
+// 	}
+
+// 	// Update fields
+// 	if updateBook.Name != "" {
+// 		bookDetails.Name = updateBook.Name
+// 	}
+// 	if updateBook.Author != "" {
+// 		bookDetails.Author = updateBook.Author
+// 	}
+// 	if updateBook.Publication != "" {
+// 		bookDetails.Publication = updateBook.Publication
+// 	}
+
+// 	if err := db.Save(&bookDetails).Error; err != nil {
+// 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+// 		return
+// 	}
+
+// 	c.JSON(http.StatusOK, bookDetails)
+// }
+>>>>>>> Stashed changes

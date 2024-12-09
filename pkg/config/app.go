@@ -24,3 +24,25 @@ func Connect() {
 func GetDB() *gorm.DB {
 	return db
 }
+
+// ResetDatabase clears all data from the database
+func ResetDatabaseEndpoint() error {
+	// Use PRAGMA statements to disable/enable foreign key checks
+	if err := db.Exec("PRAGMA foreign_keys = OFF").Error; err != nil {
+		return err
+	}
+
+	// List your table names to truncate
+	tables := []string{"customers", "books", "transactions"}
+	for _, table := range tables {
+		if err := db.Exec("DELETE FROM " + table).Error; err != nil {
+			return err
+		}
+	}
+
+	if err := db.Exec("PRAGMA foreign_keys = ON").Error; err != nil {
+		return err
+	}
+
+	return nil
+}
