@@ -1,12 +1,10 @@
 package controllers
 
 import (
-	"encoding/json"
 	"net/http"
 	"strconv"
 
 	"github.com/MoChikayo/PBKK-FP/pkg/models"
-	"github.com/MoChikayo/PBKK-FP/pkg/utils"
 	"github.com/gin-gonic/gin"
 )
 
@@ -71,6 +69,7 @@ func UpdateBook(c *gin.Context) {
 		return
 	}
 
+	// Update fields
 	if updateBook.Name != "" {
 		bookDetails.Name = updateBook.Name
 	}
@@ -89,22 +88,70 @@ func UpdateBook(c *gin.Context) {
 	c.JSON(http.StatusOK, bookDetails)
 }
 
-func CreateUser(w http.ResponseWriter, r *http.Request) {
+func CreateUser(c *gin.Context) {
 	var user models.User
-	utils.ParseBody(r, &user)
+	if err := c.ShouldBindJSON(&user); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
 	u := user.CreateUser()
-	res, _ := json.Marshal(u)
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	w.Write(res)
+	if u == nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create user"})
+		return
+	}
+	c.JSON(http.StatusOK, u)
 }
 
-func CreateTransaction(w http.ResponseWriter, r *http.Request) {
+func GetAllUsers(c *gin.Context) {
+	users := models.GetAllUsers() // Implement this in models
+	c.JSON(http.StatusOK, users)
+}
+
+func GetUserById(c *gin.Context) {
+	userId := c.Param("userId")
+	ID, err := strconv.ParseInt(userId, 0, 0)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID"})
+		return
+	}
+	user, db := models.GetUserById(ID) // Implement this in models
+	if db.Error != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": db.Error.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, user)
+}
+
+func CreateTransaction(c *gin.Context) {
 	var transaction models.Transaction
-	utils.ParseBody(r, &transaction)
+	if err := c.ShouldBindJSON(&transaction); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
 	t := transaction.CreateTransaction()
-	res, _ := json.Marshal(t)
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	w.Write(res)
+	if t == nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create transaction"})
+		return
+	}
+	c.JSON(http.StatusOK, t)
+}
+
+func GetAllTransactions(c *gin.Context) {
+	transactions := models.GetAllTransactions() // Implement this in models
+	c.JSON(http.StatusOK, transactions)
+}
+
+func GetTransactionById(c *gin.Context) {
+	transactionId := c.Param("transactionId")
+	ID, err := strconv.ParseInt(transactionId, 0, 0)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid transaction ID"})
+		return
+	}
+	transaction, db := models.GetTransactionById(ID) // Implement this in models
+	if db.Error != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": db.Error.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, transaction)
 }
