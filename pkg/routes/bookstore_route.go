@@ -10,7 +10,9 @@ var RegisterBookStoreRoutes = func(router *gin.Engine) {
 	// Book routes
 	router.POST("/book", func(c *gin.Context) {
 		controllers.CreateBook(c.Writer, c.Request)
+
 	})
+
 	router.GET("/book", func(c *gin.Context) {
 		controllers.GetBook(c.Writer, c.Request)
 	})
@@ -21,9 +23,7 @@ var RegisterBookStoreRoutes = func(router *gin.Engine) {
 	router.DELETE("/book/:bookId", controllers.DeleteBook)
 
 	// customer routes
-	// router.POST("/customer", func(c *gin.Context) {
-	// 	controllers.Createcustomer(c)
-	// })
+
 	router.POST("/customer", controllers.CreateCustomer)
 	router.GET("/customer", controllers.GetAllCustomers)
 	router.GET("/customer/:customerId", controllers.GetCustomerById)
@@ -31,9 +31,6 @@ var RegisterBookStoreRoutes = func(router *gin.Engine) {
 	router.DELETE("/customer/:customerId", controllers.DeleteCustomer)
 
 	// Transaction routes
-	// router.POST("/transaction", func(c *gin.Context) {
-	// 	controllers.CreateTransaction(c)
-	// })
 	router.POST("/transaction", controllers.CreateTransaction)
 	router.GET("/transaction", controllers.GetAllTransactions)
 	router.GET("/transaction/:transactionId", controllers.GetTransactionById)

@@ -48,30 +48,28 @@ func GetAllBooks() []Book {
 	return Books
 }
 
-// func GetBookById(id int64) (*Book, error) {
-// 	var book Book
-// 	err := db.First(&book, id).Error
-// 	return &book, err
-// }
-
-// func GetBookById(Id int64) (*Book, *gorm.DB) {
-// 	var getBook Book
-// 	db := db.Where("ID = ?", Id).Find(&getBook)
-// 	return &getBook, db
-// }
-
 func GetBookById(id int64) (*Book, *gorm.DB) {
 	var book Book
 	db := db.First(&book, id) // This returns a *gorm.DB object as the second value
 	return &book, db
 }
 
-// func DeleteBook(id int64) error {
-// 	return db.Delete(&Book{}, id).Error
+func DeleteBook(ID int64) error {
+	var book Book
+	if err := db.Where("ID = ?", ID).Delete(&book).Error; err != nil {
+		return err
+	}
+	return nil
+}
+
+// func GetBookById(id int64) (*Book, *gorm.DB) {
+// 	var book Book
+// 	db := db.First(&book, id) // This returns a *gorm.DB object as the second value
+// 	return &book, db
 // }
 
-func DeleteBook(ID int64) Book {
-	var book Book
-	db.Where("ID = ?", ID).Delete(book)
-	return book
-}
+// func DeleteBook(ID int64) Book {
+// 	var book Book
+// 	db.Where("ID = ?", ID).Delete(book)
+// 	return book
+// }

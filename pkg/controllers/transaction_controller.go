@@ -21,11 +21,24 @@ func CreateTransaction(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, t)
+	// c.HTML(http.StatusOK, "create.html", gin.H{
+	// 	"title":       "Create Transaction",
+	// 	"transaction": t,
+	// })
 }
 
 func GetAllTransactions(c *gin.Context) {
 	transactions := models.GetAllTransactions() // Implement this in models
 	c.JSON(http.StatusOK, transactions)
+	// Include view links for each transaction
+	for i, transaction := range transactions {
+		transactions[i].ViewLink = "/transaction/view/" + strconv.Itoa(int(transaction.ID))
+	}
+
+	c.HTML(http.StatusOK, "list.html", gin.H{
+		"title":        "All Transactions",
+		"transactions": transactions,
+	})
 }
 
 func GetTransactionById(c *gin.Context) {
@@ -41,6 +54,10 @@ func GetTransactionById(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, transaction)
+	// c.HTML(http.StatusOK, "view.html", gin.H{
+	// 	"title":       "Transaction Details",
+	// 	"transaction": transaction,
+	// })
 }
 
 // UpdateTransactionStatus updates the status of a transaction based on the provided data
@@ -81,5 +98,9 @@ func UpdateTransactionStatus(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, transactionDetails)
+	//c.JSON(http.StatusOK, transactionDetails)
+	c.HTML(http.StatusOK, "update.html", gin.H{
+		"title":       "Update Transaction Status",
+		"transaction": transactionDetails,
+	})
 }

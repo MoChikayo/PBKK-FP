@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Book List</title>
+  <link rel="stylesheet" href="/static/css/styles.css">
+</head>
+<body>
+  <h1>Book List</h1>
+  <table border="1">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Name</th>
+        <th>Author</th>
+        <th>Publication</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{range .}}
+      <tr>
+        <td>{{.ID}}</td>
+        <td>{{.Name}}</td>
+        <td>{{.Author}}</td>
+        <td>{{.Publication}}</td>
+        <td>
+          <a href="/book/view/{{.ID}}">View</a>
+          <a href="/book/update/{{.ID}}">Update</a>
+          <a href="/book/delete/{{.ID}}" onclick="return confirm('Are you sure?')">Delete</a>
+        </td>
+      </tr>
+      {{end}}
+    </tbody>
+  </table>
+  <a href="/book/create">Add New Book</a>
+</body>
+</html>
