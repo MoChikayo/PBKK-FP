@@ -21,12 +21,14 @@ func CreateCustomer(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create Customer"})
 		return
 	}
+	//switch
 	c.JSON(http.StatusOK, u)
 }
 
-func GetAllCustomers(c *gin.Context) {
+func GetAllCustomers(c *gin.Context) []models.Customer {
 	customers := models.GetAllCustomers() // Implement this in models
 	c.JSON(http.StatusOK, customers)
+	return customers
 }
 
 func GetCustomerById(c *gin.Context) {

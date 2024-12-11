@@ -35,10 +35,10 @@ func GetAllTransactions(c *gin.Context) {
 		transactions[i].ViewLink = "/transaction/view/" + strconv.Itoa(int(transaction.ID))
 	}
 
-	c.HTML(http.StatusOK, "list.html", gin.H{
-		"title":        "All Transactions",
-		"transactions": transactions,
-	})
+	// c.HTML(http.StatusOK, "list.html", gin.H{
+	// 	"title":        "All Transactions",
+	// 	"transactions": transactions,
+	// })
 }
 
 func GetTransactionById(c *gin.Context) {

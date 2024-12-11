@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"encoding/json"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -10,68 +9,134 @@ import (
 	"github.com/MoChikayo/PBKK-FP/pkg/models"
 	"github.com/MoChikayo/PBKK-FP/pkg/utils"
 	"github.com/gin-gonic/gin"
-	"github.com/gorilla/mux"
 	//"gorm.io/gorm"
 )
 
 var NewBook models.Book
 
 // func GetBook(w http.ResponseWriter, r *http.Request) {
-// 	newBooks, err := models.GetAllBooks()
+// 	newBooks := models.GetAllBooks() // No error return value here
+// 	res, err := json.Marshal(newBooks)
 // 	if err != nil {
 // 		http.Error(w, err.Error(), http.StatusInternalServerError)
 // 		return
 // 	}
-// 	res, _ := json.Marshal(newBooks)
-// 	w.Header().Set("Content-Type", "pkglication/json")
+// 	w.Header().Set("Content-Type", "application/json")
 // 	w.WriteHeader(http.StatusOK)
 // 	w.Write(res)
 // }
 
-func GetBook(w http.ResponseWriter, r *http.Request) {
-	newBooks := models.GetAllBooks() // No error return value here
-	res, err := json.Marshal(newBooks)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+func GetBook(c *gin.Context) {
+	// Get all books
+	newBooks := models.GetAllBooks()
+
+	// Determine response format
+	switch format := utils.GetFormat(c); format {
+	case utils.FormatHTML:
+		c.HTML(http.StatusOK, "books.list.html", gin.H{
+			"title": "All Books",
+			"books": newBooks,
+		})
+	case utils.FormatJSON:
+		c.JSON(http.StatusOK, gin.H{"books": newBooks})
+	default:
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid format"})
 	}
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	w.Write(res)
 }
 
-func GetBookById(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	bookId := vars["bookId"]
+func GetBookById(c *gin.Context) {
+	// Extract bookId from the URL
+	bookId := c.Param("bookId")
 	ID, err := strconv.ParseInt(bookId, 0, 0)
 	if err != nil {
-		fmt.Println("Error while parsing")
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid book ID"})
+		return
 	}
 
+	// Fetch book details
 	bookDetails, db := models.GetBookById(ID)
-	if db.Error != nil { // Check for errors from the *gorm.DB
-		http.Error(w, db.Error.Error(), http.StatusInternalServerError)
+	if db.Error != nil { // Handle database error
+		c.JSON(http.StatusInternalServerError, gin.H{"error": db.Error.Error()})
 		return
 	}
 
-	res, err := json.Marshal(bookDetails)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+	// Determine response format
+	switch utils.GetFormat(c) {
+	case utils.FormatHTML:
+		c.HTML(http.StatusOK, "books.view.html", gin.H{
+			"title": "Book Details",
+			"book":  bookDetails,
+		})
+	case utils.FormatJSON:
+		c.JSON(http.StatusOK, gin.H{"book": bookDetails})
 	}
-
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	w.Write(res)
 }
 
-func CreateBook(w http.ResponseWriter, r *http.Request) {
-	CreateBook := &models.Book{}
-	utils.ParseBody(r, CreateBook)
-	b := CreateBook.CreateBook()
-	res, _ := json.Marshal(b)
-	w.WriteHeader(http.StatusOK)
-	w.Write(res)
+// func GetBookById(w http.ResponseWriter, r *http.Request) {
+// 	vars := mux.Vars(r)
+// 	bookId := vars["bookId"]
+// 	ID, err := strconv.ParseInt(bookId, 0, 0)
+// 	if err != nil {
+// 		fmt.Println("Error while parsing")
+// 	}
+
+// 	bookDetails, db := models.GetBookById(ID)
+// 	if db.Error != nil { // Check for errors from the *gorm.DB
+// 		http.Error(w, db.Error.Error(), http.StatusInternalServerError)
+// 		return
+// 	}
+
+// 	res, err := json.Marshal(bookDetails)
+// 	if err != nil {
+// 		http.Error(w, err.Error(), http.StatusInternalServerError)
+// 		return
+// 	}
+
+// 	w.Header().Set("Content-Type", "application/json")
+// 	w.WriteHeader(http.StatusOK)
+// 	w.Write(res)
+// }
+
+// func CreateBook(w http.ResponseWriter, r *http.Request) {
+// 	CreateBook := &models.Book{}
+// 	utils.ParseBody(r, CreateBook)
+// 	b := CreateBook.CreateBook()
+// 	res, _ := json.Marshal(b)
+// 	w.WriteHeader(http.StatusOK)
+// 	w.Write(res)
+// }
+
+func CreateBook(c *gin.Context) {
+	var newBook models.Book
+
+	// Check if the request is JSON or form data
+	if c.ContentType() == "application/json" {
+		if err := c.ShouldBindJSON(&newBook); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid input"})
+			return
+		}
+	} else {
+		if err := c.ShouldBind(&newBook); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid input"})
+			return
+		}
+	}
+
+	// Create the book in the database
+	createdBook := newBook.CreateBook()
+
+	// Determine response format
+	switch utils.GetFormat(c) {
+	case utils.FormatHTML:
+		c.HTML(http.StatusOK, "books.create.html", gin.H{
+			"title": "Book Created",
+			"book":  createdBook,
+		})
+	case utils.FormatJSON:
+		c.JSON(http.StatusOK, gin.H{"book": createdBook})
+	default:
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid format"})
+	}
 }
 
 // DeleteBook handles the deletion of a book by its ID
@@ -136,7 +201,19 @@ func UpdateBook(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, bookDetails)
+	switch utils.GetFormat(c) {
+	case utils.FormatHTML:
+		c.HTML(http.StatusOK, "books.update.html", gin.H{
+			"title": "Book Updated",
+			"book":  bookDetails,
+		})
+	case utils.FormatJSON:
+		c.JSON(http.StatusOK, gin.H{"book": bookDetails})
+	default:
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid format"})
+	}
+
+	//c.JSON(http.StatusOK, bookDetails)
 }
 
 // func UpdateBook(c *gin.Context) {

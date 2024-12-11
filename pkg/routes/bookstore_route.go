@@ -8,24 +8,33 @@ import (
 
 var RegisterBookStoreRoutes = func(router *gin.Engine) {
 	// Book routes
-	router.POST("/book", func(c *gin.Context) {
-		controllers.CreateBook(c.Writer, c.Request)
-
-	})
-
-	router.GET("/book", func(c *gin.Context) {
-		controllers.GetBook(c.Writer, c.Request)
-	})
-	router.GET("/book/:bookId", func(c *gin.Context) {
-		controllers.GetBookById(c.Writer, c.Request)
-	})
+	router.POST("/book", controllers.CreateBook)
+	router.GET("/book", controllers.GetBook)
+	router.GET("/book/:bookId", controllers.GetBookById)
 	router.PUT("/book/:bookId", controllers.UpdateBook)
 	router.DELETE("/book/:bookId", controllers.DeleteBook)
+
+	// router.POST("/book", func(c *gin.Context) {
+	// 	controllers.CreateBook(c.Writer, c.Request)
+
+	// })
+
+	// router.GET("/book", func(c *gin.Context) {
+	// 	controllers.GetBook(c.Writer, c.Request)
+	// })
+	// router.GET("/book/:bookId", func(c *gin.Context) {
+	// 	controllers.GetBookById(c.Writer, c.Request)
+	// })
+	// router.PUT("/book/:bookId", controllers.UpdateBook)
+	// router.DELETE("/book/:bookId", controllers.DeleteBook)
 
 	// customer routes
 
 	router.POST("/customer", controllers.CreateCustomer)
-	router.GET("/customer", controllers.GetAllCustomers)
+	router.GET("/customer", func(c *gin.Context) {
+		customers := controllers.GetAllCustomers(c)
+		c.JSON(200, customers)
+	})
 	router.GET("/customer/:customerId", controllers.GetCustomerById)
 	router.PUT("/customer/:customerId", controllers.UpdateCustomer)
 	router.DELETE("/customer/:customerId", controllers.DeleteCustomer)

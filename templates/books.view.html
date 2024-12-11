@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View Book</title>
+    <link rel="stylesheet" href="/static/css/tailwind.css">
+</head>
+<body class="bg-gray-100">
+    <!-- Header -->
+    {{ template "header.html" . }}
+
+    <div class="container mx-auto p-4">
+        <h1 class="text-2xl font-bold mb-4">View Book</h1>
+        <div class="bg-white p-6 rounded shadow-md">
+            <p><strong>Name:</strong> <span id="name"></span></p>
+            <p><strong>Author:</strong> <span id="author"></span></p>
+            <p><strong>Publication:</strong> <span id="publication"></span></p>
+            <a href="/update.html?id=<span id='bookId'></span>" class="text-blue-500 hover:underline">Update</a>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    {{ template "footer.html" . }}
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const bookId = urlParams.get('id');
+
+        // Fetch book details
+        fetch(`/book/${bookId}`)
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('name').textContent = data.name;
+                document.getElementById('author').textContent = data.author;
+                document.getElementById('publication').textContent = data.publication;
+                document.getElementById('bookId').textContent = data.id;
+            });
+    </script>
+</body>
+</html>
