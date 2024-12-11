@@ -1,6 +1,8 @@
 package routes
 
 import (
+	"net/http"
+
 	"github.com/MoChikayo/PBKK-FP/pkg/config"
 	"github.com/MoChikayo/PBKK-FP/pkg/controllers"
 	"github.com/gin-gonic/gin"
@@ -8,6 +10,11 @@ import (
 
 var RegisterBookStoreRoutes = func(router *gin.Engine) {
 	// Book routes
+	router.GET("/book/create", func(c *gin.Context) {
+		c.HTML(http.StatusOK, "books.create.html", gin.H{
+			"title": "Create a New Book",
+		})
+	})
 	router.POST("/book", controllers.CreateBook)
 	router.GET("/book", controllers.GetBook)
 	router.GET("/book/:bookId", controllers.GetBookById)

@@ -39,8 +39,6 @@ func GetBook(c *gin.Context) {
 		})
 	case utils.FormatJSON:
 		c.JSON(http.StatusOK, gin.H{"books": newBooks})
-	default:
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid format"})
 	}
 }
 
@@ -109,15 +107,17 @@ func GetBookById(c *gin.Context) {
 func CreateBook(c *gin.Context) {
 	var newBook models.Book
 
-	// Check if the request is JSON or form data
+	// Determine the content type of the request
 	if c.ContentType() == "application/json" {
+		// Bind JSON input
 		if err := c.ShouldBindJSON(&newBook); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid input"})
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid JSON input"})
 			return
 		}
 	} else {
+		// Bind form data (such as when submitting an HTML form)
 		if err := c.ShouldBind(&newBook); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid input"})
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid form input"})
 			return
 		}
 	}
@@ -125,11 +125,11 @@ func CreateBook(c *gin.Context) {
 	// Create the book in the database
 	createdBook := newBook.CreateBook()
 
-	// Determine response format
+	// Render the appropriate response based on the desired format
 	switch utils.GetFormat(c) {
 	case utils.FormatHTML:
 		c.HTML(http.StatusOK, "books.create.html", gin.H{
-			"title": "Book Created",
+			"title": "Create New Book",
 			"book":  createdBook,
 		})
 	case utils.FormatJSON:
