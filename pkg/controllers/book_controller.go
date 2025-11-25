@@ -6,17 +6,36 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/MoChikayo/PBBK-FP/pkg/models"
-	"github.com/MoChikayo/PBBK-FP/pkg/utils"
+	"github.com/MoChikayo/PBKK-FP/pkg/config"
+	"github.com/MoChikayo/PBKK-FP/pkg/models"
+	"github.com/MoChikayo/PBKK-FP/pkg/utils"
+	"github.com/gin-gonic/gin"
 	"github.com/gorilla/mux"
+	//"gorm.io/gorm"
 )
 
 var NewBook models.Book
 
+// func GetBook(w http.ResponseWriter, r *http.Request) {
+// 	newBooks, err := models.GetAllBooks()
+// 	if err != nil {
+// 		http.Error(w, err.Error(), http.StatusInternalServerError)
+// 		return
+// 	}
+// 	res, _ := json.Marshal(newBooks)
+// 	w.Header().Set("Content-Type", "pkglication/json")
+// 	w.WriteHeader(http.StatusOK)
+// 	w.Write(res)
+// }
+
 func GetBook(w http.ResponseWriter, r *http.Request) {
-	newBooks := models.GetAllBooks()
-	res, _ := json.Marshal(newBooks)
-	w.Header().Set("Content-Type", "pkglication/json")
+	newBooks := models.GetAllBooks() // No error return value here
+	res, err := json.Marshal(newBooks)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	w.Write(res)
 }
@@ -28,9 +47,20 @@ func GetBookById(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		fmt.Println("Error while parsing")
 	}
-	bookDetails, err := models.GetBookById(ID)
-	res, _ := json.Marshal(bookDetails)
-	w.Header().Set("Content-Type", "pkglication/json")
+
+	bookDetails, db := models.GetBookById(ID)
+	if db.Error != nil { // Check for errors from the *gorm.DB
+		http.Error(w, db.Error.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	res, err := json.Marshal(bookDetails)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	w.Write(res)
 }
@@ -40,35 +70,57 @@ func CreateBook(w http.ResponseWriter, r *http.Request) {
 	utils.ParseBody(r, CreateBook)
 	b := CreateBook.CreateBook()
 	res, _ := json.Marshal(b)
-	//w.Header().Set("Content-Type", "pkglication/json")
 	w.WriteHeader(http.StatusOK)
 	w.Write(res)
 }
 
-func DeleteBook(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	bookId := vars["bookId"]
+// DeleteBook handles the deletion of a book by its ID
+func DeleteBook(c *gin.Context) {
+	bookId := c.Param("bookId")
 	ID, err := strconv.ParseInt(bookId, 0, 0)
 	if err != nil {
 		fmt.Println("Error while parsing")
 	}
-	book := models.DeleteBook(ID)
-	res, _ := json.Marshal(book)
-	w.Header().Set("Content-Type", "pkglication/json")
-	w.WriteHeader(http.StatusOK)
-	w.Write(res)
+
+	var bookDetails models.Book
+	db := config.GetDB().Where("id = ?", ID).First(&bookDetails)
+	if db.Error != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": db.Error.Error()})
+		return
+	}
+
+	if bookDetails.ID == 0 {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Book not found"})
+		return
+	}
+
+	if err := config.GetDB().Delete(&bookDetails).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete book"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Book deleted successfully"})
 }
 
-func UpdateBook(w http.ResponseWriter, r *http.Request) {
-	var updateBook = &models.Book{}
-	utils.ParseBody(r, updateBook)
-	vars := mux.Vars(r)
-	bookId := vars["bookId"]
+func UpdateBook(c *gin.Context) {
+	var updateBook models.Book
+	if err := c.ShouldBindJSON(&updateBook); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	bookId := c.Param("bookId")
 	ID, err := strconv.ParseInt(bookId, 0, 0)
 	if err != nil {
 		fmt.Println("Error while parsing")
 	}
-	bookDetails, db := models.GetBookById(ID)
+
+	var bookDetails models.Book
+	db := config.GetDB().Table("books").Where("id = ?", ID).First(&bookDetails)
+	if db.Error != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": db.Error.Error()})
+		return
+	}
 	if updateBook.Name != "" {
 		bookDetails.Name = updateBook.Name
 	}
@@ -78,9 +130,61 @@ func UpdateBook(w http.ResponseWriter, r *http.Request) {
 	if updateBook.Publication != "" {
 		bookDetails.Publication = updateBook.Publication
 	}
-	db.Save(&bookDetails)
-	res, _ := json.Marshal(bookDetails)
-	w.Header().Set("Content_Type", "pkglication/json")
-	w.WriteHeader(http.StatusOK)
-	w.Write(res)
+
+	if err := config.GetDB().Table("books").Where("id = ?", ID).Save(&bookDetails).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, bookDetails)
 }
+
+// func UpdateBook(c *gin.Context) {
+// 	var updateBook models.Book
+// 	if err := c.ShouldBindJSON(&updateBook); err != nil {
+// 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+// 		return
+// 	}
+
+// 	bookId := c.Param("bookId")
+// 	ID, err := strconv.ParseInt(bookId, 0, 0)
+// 	if err != nil {
+// 		fmt.Println("Error while parsing")
+// 	}
+
+// 	// Fetch the book details explicitly using the "books" table
+// 	var bookDetails models.Book
+// 	db := config.GetDB().Table("books").Where("id = ?", ID).First(&bookDetails)
+// 	if db.Error != nil {
+// 		c.JSON(http.StatusInternalServerError, gin.H{"error": db.Error.Error()})
+// 		return
+// 	}
+// 	if updateBook.Name != "" {
+// 		bookDetails.Name = updateBook.Name
+// 	}
+// 	if updateBook.Author != "" {
+// 		bookDetails.Author = updateBook.Author
+// 	}
+// 	if updateBook.Publication != "" {
+// 		bookDetails.Publication = updateBook.Publication
+// 	}
+
+// 	// Save changes
+// 	if err := config.GetDB().Table("books").Where("id = ?", ID).Save(&bookDetails).Error; err != nil {
+// 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+// 		return
+// 	}
+
+// 	c.JSON(http.StatusOK, bookDetails)
+// }
+
+// func DeleteBook(c *gin.Context) {
+// 	bookId := c.Param("bookId")
+// 	ID, err := strconv.ParseInt(bookId, 0, 0)
+// 	if err != nil {
+// 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid book ID"})
+// 		return
+// 	}
+// 	book := models.DeleteBook(ID)
+// 	c.JSON(http.StatusOK, book)
+// }

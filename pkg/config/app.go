@@ -1,32 +1,48 @@
 package config
 
 import (
-	"fmt"
 	"log"
-	"os"
 
-	"gorm.io/driver/mysql"
+	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
 
 var db *gorm.DB
 
 func Connect() {
-	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local",
-		os.Getenv("DB_USER"),
-		os.Getenv("DB_PASS"),
-		os.Getenv("DB_HOST"),
-		os.Getenv("DB_PORT"),
-		os.Getenv("DB_NAME"),
-	)
-	d, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
+	dsn := "database.db"
+
+	// Open a SQLite connection
+	d, err := gorm.Open(sqlite.Open(dsn), &gorm.Config{})
 	if err != nil {
-		log.Fatalf("Failed to connect to the database: %v", err)
+		log.Fatalf("Failed to connect to the SQLite database: %v", err)
 	}
 	db = d
-	log.Println("Connected to the database")
+	log.Println("Connected to the SQLite database")
 }
 
 func GetDB() *gorm.DB {
 	return db
+}
+
+// ResetDatabase clears all data from the database
+func ResetDatabaseEndpoint() error {
+	// Use PRAGMA statements to disable/enable foreign key checks
+	if err := db.Exec("PRAGMA foreign_keys = OFF").Error; err != nil {
+		return err
+	}
+
+	// List your table names to truncate
+	tables := []string{"customers", "books", "transactions"}
+	for _, table := range tables {
+		if err := db.Exec("DELETE FROM " + table).Error; err != nil {
+			return err
+		}
+	}
+
+	if err := db.Exec("PRAGMA foreign_keys = ON").Error; err != nil {
+		return err
+	}
+
+	return nil
 }

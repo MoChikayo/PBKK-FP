@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>View Book</title>
+</head>
+<body>
+    <h1>View Book</h1>
+    <div id="book-details"></div>
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const bookId = urlParams.get('id');
+
+        // Fetch book details
+        fetch(`/book/${bookId}`)
+            .then(response => response.json())
+            .then(data => {
+                const details = `
+                    <p><strong>Name:</strong> ${data.name}</p>
+                    <p><strong>Author:</strong> ${data.author}</p>
+                    <p><strong>Publication:</strong> ${data.publication}</p>
+                    <a href="/update.html?id=${data.id}">Update</a>
+                `;
+                document.getElementById('book-details').innerHTML = details;
+            });
+    </script>
+</body>
+</html>
