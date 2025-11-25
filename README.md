@@ -180,11 +180,6 @@ http://localhost:9010/
 
 ---
 
-# 🤝 Authors
-**PBKK Final Project — created by Azril Addia**
-
----
-
 # 📄 License
 This project is open-source — use freely for learning and development.
 
