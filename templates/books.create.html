@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create New Book</title>
+    <!-- Link to Tailwind CSS CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        .content {
+            margin-left: 0; 
+            margin-right: 10px;
+            padding-left: 10px;
+            
+        }
+        @media (max-width: 768px) {
+            .content {
+                margin-left: 0; /* Full-width on smaller screens */
+                padding-left: 0; /* Remove padding on smaller screens */
+            }
+            .sidebar {
+                width: 100%; /* Full-width on smaller screens */
+                position: static; /* Remove fixed positioning */
+                padding: 15px; /* Reduce padding */
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-100 flex flex-col min-h-screen">
+    <!-- Header -->
+    {{ template "header.html" . }}
+
+    <div class="flex flex-1">
+        <!-- Sidebar -->
+        {{ template "sidebar.html" . }}
+
+        <!-- Main Content -->
+        <div class="flex-1 flex items-center justify-center p-8 content">
+            <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-md flex justify-center items-center">
+                <div class="w-full">
+                    <h1 class="text-2xl font-semibold mb-4 text-gray-900 text-center">Create New Book</h1>
+                    <form action="/book" method="POST">
+                        <div class="mb-4">
+                            <label for="name" class="block text-gray-700">Name</label>
+                            <input type="text" id="name" name="name" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm">
+                        </div>
+                        <div class="mb-4">
+                            <label for="author" class="block text-gray-700">Author</label>
+                            <input type="text" id="author" name="author" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm">
+                        </div>
+                        <div class="mb-4">
+                            <label for="publication" class="block text-gray-700">Publication</label>
+                            <input type="text" id="publication" name="publication" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm">
+                        </div>
+                        <div class="mt-4">
+                            <button type="submit" class="inline-block py-2 px-4 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring focus:ring-blue-500 focus:ring-opacity-50 w-full">Create Book</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

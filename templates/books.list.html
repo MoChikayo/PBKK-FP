@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Book List</title>
+    <!-- Tailwind CSS -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css"
+      rel="stylesheet"
+    />
+    <style>
+      .content {
+        margin-left: 250px; /* Same width as the sidebar */
+        padding-left: 20px; /* Space for better content alignment */
+      }
+      @media (max-width: 768px) {
+        .content {
+          margin-left: 0; /* Full-width on smaller screens */
+          padding-left: 0; /* Remove padding on smaller screens */
+        }
+        .sidebar {
+          width: 100%; /* Full-width on smaller screens */
+          position: static; /* Remove fixed positioning */
+          padding: 15px; /* Reduce padding */
+        }
+      }
+    </style>
+  </head>
+  <body class="bg-gray-100">
+    <!-- Header -->
+    {{template "header.html"}} {{ template "sidebar.html" . }}
+
+    <div class="container mx-auto py-8 px-4">
+      <div class="content">
+        <h1 class="text-2xl font-semibold mb-4 text-gray-900">Book List</h1>
+        {{if .Books}}
+        <table class="min-w-full bg-white shadow-md rounded-lg">
+          <thead class="bg-gray-200">
+            <tr>
+              <th class="py-2 px-4 text-left">ID</th>
+              <th class="py-2 px-4 text-left">Name</th>
+              <th class="py-2 px-4 text-left">Author</th>
+              <th class="py-2 px-4 text-left">Publication</th>
+              <th class="py-2 px-4 text-center">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {{range .Books}}
+            <tr class="border-t">
+              <td class="py-2 px-4">{{.ID}}</td>
+              <td class="py-2 px-4">{{.Name}}</td>
+              <td class="py-2 px-4">{{.Author}}</td>
+              <td class="py-2 px-4">{{.Publication}}</td>
+              <td class="py-2 px-4 text-center">
+                <a
+                  href="/books/view/{{.ID}}"
+                  class="text-blue-500 hover:underline"
+                  >View</a
+                >
+                <a
+                  href="/books/update/{{.ID}}"
+                  class="text-yellow-500 hover:underline"
+                  >Update</a
+                >
+                <a
+                  href="/books/delete/{{.ID}}"
+                  class="text-red-500 hover:underline"
+                  onclick="return confirm('Are you sure?')"
+                  >Delete</a
+                >
+              </td>
+            </tr>
+            {{end}}
+          </tbody>
+        </table>
+        {{else}}
+        <p class="text-center text-gray-600">No books available.</p>
+        {{end}}
+
+        <div class="mt-4">
+          <a
+            href="/books/new"
+            class="inline-block py-2 px-4 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring focus:ring-blue-500 focus:ring-opacity-50"
+            >Add New Book</a
+          >
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
